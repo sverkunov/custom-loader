@@ -1,5 +1,5 @@
 import { Component, ContentChild, AfterContentInit, OnDestroy, OnInit, ElementRef, Input } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Chart } from 'angular-highcharts';
 import { SeriesLineOptions } from 'highcharts';
@@ -14,7 +14,6 @@ export class ChartComponent implements OnInit, AfterContentInit, OnDestroy {
   @Input() chartColor: string;
   chart: Chart;
   chartName = 'alligator 🐸';
-  chartValue: BehaviorSubject<SeriesLineOptions> = new BehaviorSubject(null);
   private subscription: Subscription;
 
   @ContentChild(LoaderComponent, {static: true}) loader: LoaderComponent;
@@ -38,10 +37,11 @@ export class ChartComponent implements OnInit, AfterContentInit, OnDestroy {
       colors: [this.chartColor]
     });
 
-    const chartValueUpdate: SeriesLineOptions = {name: this.chartName, data: [2.5, 2, 3, 2, 3, 2, 2], type: 'line'};
-    this.chartValue.next(chartValueUpdate);
+    this.initChartData();
+  }
 
-    this.subscription = this.chartValue
+  private initChartData() {
+    this.subscription = of<SeriesLineOptions>({name: this.chartName, data: [2.5, 2, 3, 2, 3, 2, 2], type: 'line'})
       .pipe(delay(1000))
       .subscribe((chartValue: SeriesLineOptions) => {
         this.chart.addSeries(chartValue, true, true);
